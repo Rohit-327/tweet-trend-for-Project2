@@ -35,38 +35,31 @@ pipeline {
             }
         
         }
-        stage("Jar Publish") {
-    steps {
-        script {
-            echo '<--------------- Jar Publish Started --------------->'
+         stage("Jar Publish") {
+          steps {
+            script {
+                    echo '<--------------- Jar Publish Started --------------->'
+                    def server = Artifactory.newServer url:registry+"/artifactory" ,  credentialsId:"jenkins-jfrog-cred"
+                    def properties = "buildid=${env.BUILD_ID},commitid=${GIT_COMMIT}";
+                    def uploadSpec = """{
+                          "files": [
+                            {
+                              "pattern": "jarstaging/(*)
+",
+                              "target": "fqts-01rk-libs-release-local/{1}",
+                              "flat": "false",
+                              "props" : "${properties}",
+                              "exclusions": [ "*.sha1", "*.md5"]
+                            }
+                        ]
+                    }"""
+                    def buildInfo = server.upload(uploadSpec)
+                    buildInfo.env.collect()
+                    server.publishBuildInfo(buildInfo)
+                    echo '<--------------- Jar Publish Ended --------------->'  
             
-            def server = Artifactory.newServer(
-                url: registry + "/artifactory",
-                credentialsId: "jenkins-jfrog-cred"
-            )
-
-            def properties = "buildid=${env.BUILD_ID},commitid=${GIT_COMMIT}"
-
-            def uploadSpec = """{
-                "files": [
-                    {
-                        "pattern": "jarstaging/*",
-                        "target": "fqts-01rk-libs-release-local/",
-                        "flat": false,
-                        "props": "${properties}",
-                        "exclusions": ["*.sha1", "*.md5"]
-                    }
-                ]
-            }"""
-
-            def buildInfo = server.upload(uploadSpec)
-            buildInfo.env.collect()
-            server.publishBuildInfo(buildInfo)
-
-            echo '<--------------- Jar Publish Ended --------------->'
-        }
-    }
-}
+                }
+            }   
              stage('Build Docker Image') {
             steps {
                 script {
