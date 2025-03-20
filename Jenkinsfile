@@ -1,4 +1,4 @@
-def registry = 'https://fqts01rk.jfrog.io'
+def registry = 'https://fqts01rk.jfrog.io/'
 pipeline {
     agent {
         node {
@@ -8,12 +8,9 @@ pipeline {
     environment {
         PATH = "/opt/apache-maven-3.9.9/bin:$PATH"
         DOCKER_TAG = '2.1.3'
-        DOCKER_IMAGE_NAME = 'ttrend'
+        DOCKER_IMAGE_NAME = 'ttrend-img'
         JFROG_REGISTRY = 'https://fqts01rk.jfrog.io'
-         ARTIFACTORY_REPO = 'fqts01rk.jfrog.io/fqts01-docker-local'
-
-
-
+        ARTIFACTORY_REPO = 'fqts01rk.jfrog.io/fqts01-docker-local'
     }
     stages {
         stage("build") {
@@ -26,7 +23,7 @@ pipeline {
         }    
             stage('SonarQube analysis') {
             environment {
-            scannerHome = tool 'fqts-sonar-scanner' 
+            scannerHome = tool 'fqts-sonar-scanner'
                    }
             steps{
                 withSonarQubeEnv('fqts-sonar-server') { 
@@ -44,8 +41,7 @@ pipeline {
                     def uploadSpec = """{
                           "files": [
                             {
-                              "pattern": "jarstaging/(*)
-",
+                              "pattern": "jarstaging/(*)",
                               "target": "fqts-01rk-libs-release-local/{1}",
                               "flat": "false",
                               "props" : "${properties}",
@@ -61,14 +57,16 @@ pipeline {
                 }
             }   
         }
-             stage('Build Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     sh """
                     docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
                     """
                 }
-                stage('Publish Docker Image to Artifactory') {
+            }
+        }
+        stage('Publish Docker Image to Artifactory') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'jenkins-jfrog-cred', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
@@ -82,11 +80,5 @@ pipeline {
                 }
             }
         }
-
-
-            }
-             
-        }
-
     }
 }
