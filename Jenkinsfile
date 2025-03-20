@@ -35,7 +35,7 @@ pipeline {
             }
         
         }
-         stage("Jar Publish") {
+        stage("Jar Publish") {
           steps {
             script {
                     echo '<--------------- Jar Publish Started --------------->'
@@ -60,6 +60,7 @@ pipeline {
             
                 }
             }   
+        }
              stage('Build Docker Image') {
             steps {
                 script {
