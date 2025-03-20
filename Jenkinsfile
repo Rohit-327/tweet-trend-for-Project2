@@ -8,7 +8,10 @@ pipeline {
     environment {
         PATH = "/opt/apache-maven-3.9.9/bin:$PATH"
         DOCKER_TAG = '2.1.3'
-        DOCKER_IMAGE_NAME = 'ttrend'
+        DOCKER_IMAGE_NAME = 'ttrend'
+        JFROG_REGISTRY = 'https://fqts01rk.jfrog.io'
+         ARTIFACTORY_REPO = 'fqts01rk.jfrog.io/fqts01-docker-local'
+
 
 
     }
@@ -65,6 +68,22 @@ pipeline {
                     docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
                     """
                 }
+                stage('Publish Docker Image to Artifactory') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'jenkins-jfrog-cred', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh """
+                    echo $PASSWORD | docker login $JFROG_REGISTRY --username $USERNAME --password-stdin
+                    echo '<--------------- docker login done --------------->' 
+                    docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} ${ARTIFACTORY_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}
+                    docker push ${ARTIFACTORY_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}
+                    """
+                    }
+                }
+            }
+        }
+
+
             }
              
         }
