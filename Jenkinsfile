@@ -7,6 +7,10 @@ pipeline {
     }
     environment {
         PATH = "/opt/apache-maven-3.9.9/bin:$PATH"
+        DOCKER_TAG = '2.1.3'
+        DOCKER_IMAGE_NAME = 'ttrend'
+
+
     }
     stages {
         stage("build") {
@@ -54,6 +58,16 @@ pipeline {
                 }
             }   
         }
+             stage('Build Docker Image') {
+            steps {
+                script {
+                    sh """
+                    docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
+                    """
+                }
+            }
+
+
 
     }
 }
